@@ -97,23 +97,12 @@ extracted <- mutate(.data = extracted, Activity = DescriptiveActivity)
 
 activityUnique = unique(extracted$Activity)
 subjectUnique = unique(extracted$Subject)
-Variables <- names(extracted[-(1:2)]) # feature variable names from extracted data
 
-#initially only contains WALKING
-final <- data.frame(colMeans(extracted[extracted$Activity=="WALKING",][,-(1:2)]))
+#change activity and subject to factors
+extracted <- mutate(.data = extracted, Activity = factor(extracted$Activity), Subject = factor(extracted$Subject))
 
-#add means of other activities
-for(i in activityUnique) {
-  if(i!="WALKING") final <- cbind(final,colMeans(extracted[extracted$Activity==i,][,-(1:2)]))
-}
-
-#add means of subjects
-for(i in subjectUnique) {
-  final <- cbind(final,colMeans(extracted[extracted$Subject==i,][,-(1:2)]))
-}
-
-#change the header names
-names(final) <- union(activityUnique,subjectUnique)
+#orders by factors and then summarises the mean of each combined factor level
+final <- summarise_each(group_by(extracted, Subject,Activity), list(mean=mean))
 
 #download the table
 write.table(final, "step5dataset.txt", row.names = FALSE)  
